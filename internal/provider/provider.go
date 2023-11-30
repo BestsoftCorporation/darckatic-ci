@@ -49,7 +49,7 @@ func (g *GitHubProvider) DownloadZip(owner, repo, token, destination string) err
 
 	client := github.NewClient(tc)
 
-	zipURL, _, err := client.Repositories.GetArchiveLink(ctx, owner, repo, github.Zipball, nil, true)
+	zipURL, _, err := client.Repositories.GetArchiveLink(ctx, owner, repo, "zipball", nil, true)
 	if err != nil {
 		return err
 	}
