@@ -1,0 +1,19 @@
+environment:
+  name: production
+  server_address: "https://your-server.com"
+
+git_credentials:
+  provider: github  # or gitlab
+  username: your_username
+  token: your_personal_access_token
+
+projects:
+  - name: project1
+    repository: "https://github.com/your_username/project1.git"
+    branch: main
+    docker_compose_path: "path/to/project1/docker-compose.yml"
+
+  - name: project2
+    repository: "https://github.com/your_username/project2.git"
+    branch: develop
+    docker_compose_path: "path/to/project2/docker-compose.yml"
