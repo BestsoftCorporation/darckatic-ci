@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var reverseCmd = &cobra.Command{
+var initCmd = &cobra.Command{
 	Use:     "init",
 	Aliases: []string{"init"},
 	Short:   "Init config file",
@@ -23,5 +23,5 @@ var reverseCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(reverseCmd)
+	rootCmd.AddCommand(initCmd)
 }
