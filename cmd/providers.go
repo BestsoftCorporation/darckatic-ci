@@ -6,7 +6,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listCmd = &cobra.Command{
+var listBranchesCmd = &cobra.Command{
+	Use:     "list-branches",
+	Aliases: []string{"list-branches"},
+	Short:   "List branches",
+	Args:    cobra.ExactArgs(3),
+	Run: func(cmd *cobra.Command, args []string) {
+		hubProvider := provider.GitHubProvider{}
+		result, err := hubProvider.ListBranches(args[0], args[1], args[2])
+		if err != nil {
+			fmt.Println("An error occuered: " + err.Error())
+			return
+		}
+
+		for _, project := range result {
+			fmt.Println(project)
+		}
+	},
+}
+
+var listProjectsCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"list"},
 	Short:   "List repositories",
@@ -43,6 +62,7 @@ var downloadCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(listProjectsCmd)
 	rootCmd.AddCommand(downloadCmd)
+	rootCmd.AddCommand(listBranchesCmd)
 }
