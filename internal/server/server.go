@@ -5,38 +5,57 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
-// CopyFileToRemote copies a local file to a remote server using SCP.
-func (server RemoteServer) CopyFileToRemote(localFilePath, remoteFilePath string) error {
-	// Read the private key file
-	key, err := ioutil.ReadFile(server.KeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to read private key: %v", err)
-	}
+func (server *RemoteServer) getSshClient() (*ssh.Client, error) {
 
-	// Parse the private key
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return fmt.Errorf("failed to parse private key: %v", err)
-	}
+	config := &ssh.ClientConfig{}
 
-	// Set up the SSH client configuration
-	config := &ssh.ClientConfig{
-		User: server.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Change in production for security
+	switch server.AuthMethod {
+	case Password:
+		// Set up the SSH client configuration
+		config = &ssh.ClientConfig{
+			User: server.Username,
+			Auth: []ssh.AuthMethod{
+				ssh.Password(server.Key),
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Change in production for security
+		}
+	case PublicKey:
+		// Parse the private key
+		signer, err := ssh.ParsePrivateKey([]byte(server.Key))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %v", err)
+		}
+		config = &ssh.ClientConfig{
+			User: server.Username,
+			Auth: []ssh.AuthMethod{
+				ssh.PublicKeys(signer),
+			},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Change in production for security
+		}
+	default:
+		return nil, fmt.Errorf("unknown authentication method")
 	}
 
 	// Connect to the remote server over SSH
 	sshClient, err := ssh.Dial("tcp", server.Host+":"+server.Port, config)
 	if err != nil {
-		return fmt.Errorf("failed to connect to SSH server: %v", err)
+		return sshClient, fmt.Errorf("failed to connect to SSH server: %v", err)
 	}
+
+	return sshClient, nil
+}
+
+// CopyFileToRemote copies a local file to a remote server using SCP.
+func (server *RemoteServer) CopyFileToRemote(localFilePath, remoteFilePath string) error {
+
+	sshClient, err := server.getSshClient()
+	if err != nil {
+		return fmt.Errorf("failed to create SSH client: %v", err)
+	}
+
 	defer sshClient.Close()
 
 	// Open an SFTP session on top of the existing SSH connection
@@ -44,6 +63,7 @@ func (server RemoteServer) CopyFileToRemote(localFilePath, remoteFilePath string
 	if err != nil {
 		return fmt.Errorf("failed to create SFTP client: %v", err)
 	}
+
 	defer sftpClient.Close()
 
 	// Open the local file for reading
@@ -71,34 +91,14 @@ func (server RemoteServer) CopyFileToRemote(localFilePath, remoteFilePath string
 	return nil
 }
 
-func (server RemoteServer) UnzipFileOnRemote(remoteFilePath, destinationDir string) error {
-	// Read the private key file
-	key, err := ioutil.ReadFile(server.KeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to read private key: %v", err)
-	}
+func (server *RemoteServer) UnzipFileOnRemote(remoteFilePath, destinationDir string) error {
 
-	// Parse the private key
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return fmt.Errorf("failed to parse private key: %v", err)
-	}
-
-	// Set up the SSH client configuration
-	config := &ssh.ClientConfig{
-		User: server.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Change in production for security
-	}
-
-	// Connect to the remote server over SSH
-	sshClient, err := ssh.Dial("tcp", server.Host+":"+server.Port, config)
-	if err != nil {
-		return fmt.Errorf("failed to connect to SSH server: %v", err)
-	}
+	sshClient, err := server.getSshClient()
 	defer sshClient.Close()
+
+	if err != nil {
+		return fmt.Errorf("failed to create SSH client: %v", err)
+	}
 
 	// Create a session
 	session, err := sshClient.NewSession()
@@ -108,7 +108,7 @@ func (server RemoteServer) UnzipFileOnRemote(remoteFilePath, destinationDir stri
 	defer session.Close()
 
 	// Build the unzip command
-	cmd := fmt.Sprintf("unzip -o %s -d %s", remoteFilePath, destinationDir)
+	cmd := fmt.Sprintf("unzip -o %s -d %s && rm %s", remoteFilePath, destinationDir, remoteFilePath)
 
 	// Execute the command on the remote server
 	err = session.Run(cmd)

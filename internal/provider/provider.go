@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 )
 
-// ProjectProvider defines the interface for fetching projects and downloading zip archives from different providers.
 type ProjectProvider interface {
 	FetchProjects(owner, token string) ([]string, error)
 	DownloadZip(owner, repo, token, destination string) error
+	ListBranches(owner, repo, token string) ([]string, error)
 }
 
 // GitHubProvider is a GitHub API implementation of the ProjectProvider interface.
@@ -102,7 +102,7 @@ func (g *GitHubProvider) DownloadZip(owner, repo, token, destination string) err
 	}
 
 	// Create the file
-	out, err := os.Create("test.zip")
+	out, err := os.Create(destination + ".zip")
 	if err != nil {
 		fmt.Printf("err: %s", err)
 	}
@@ -158,30 +158,29 @@ func (g *GitLabProvider) DownloadZip(owner, repo, token, destination string) err
 	return ioutil.WriteFile(zipPath, content, os.ModePerm)
 }
 
-func (g *GitLabProvider) ListBranches(projectID interface{}) error {
-	// Replace with your GitLab API token
-	token := "YOUR_GITLAB_TOKEN"
-
+func (g *GitLabProvider) ListBranches(owner, repo, token string) ([]string, error) {
+	result := []string{}
 	// Create a new GitLab client
 	gitlabClient, err := gitlab.NewClient(token)
 	if err != nil {
-		return fmt.Errorf("error creating GitLab client: %v", err)
+		return result, fmt.Errorf("error creating GitLab client: %v", err)
 	}
 
 	// Replace with your GitLab server URL
 	//gitlabClient.set("https://gitlab.com/api/v4")
 
 	// Get the branches of the project
-	branches, _, err := gitlabClient.Branches.ListBranches(projectID, nil)
+	branches, _, err := gitlabClient.Branches.ListBranches(owner, nil)
 	if err != nil {
-		return fmt.Errorf("error listing branches: %v", err)
+		return result, fmt.Errorf("error listing branches: %v", err)
 	}
 
 	// Print the branch names
 	fmt.Println("Branches:")
 	for _, branch := range branches {
-		fmt.Printf("- %s (SHA: %s)\n", branch.Name, branch.Commit.ID)
+
+		result = append(result, fmt.Sprintf("- %s (SHA: %s)\n", branch.Name, branch.Commit.ID))
 	}
 
-	return nil
+	return result, nil
 }

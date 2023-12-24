@@ -68,6 +68,20 @@ func CreateTables(db *sql.DB) error {
 		return fmt.Errorf("failed to create 'providers' table: %v", err)
 	}
 
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS servers (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL,
+			host TEXT NOT NULL,
+			port INTEGER NOT NULL,
+			keyValue TEXT NOT NULL
+			FOREIGN KEY (userId) REFERENCES users (id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create 'providers' table: %v", err)
+	}
+
 	fmt.Println("Tables 'users' and 'providers' created successfully.")
 	return nil
 }
