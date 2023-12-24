@@ -1,14 +1,25 @@
 package deploy
 
 import (
-	"darkatic-ci/internal/owner"
+	"darkatic-ci/internal/provider"
 	"darkatic-ci/internal/repository"
 	"darkatic-ci/internal/server"
+	"darkatic-ci/internal/source"
 )
 
-func Deploy(server *server.RemoteServer, owner *owner.Owner, repo *repository.Repository) error {
+func Deploy(server *server.RemoteServer, repo *repository.Repository) error {
 
-	err := repo.Provider.DownloadZip(owner.Name, repo.Name, owner.Token, repo.Name)
+	var prov provider.ProjectProvider
+
+	src := repo.Source
+
+	if src.SourceType == source.GitHub {
+		prov = &provider.GitHubProvider{}
+	} else if src.SourceType == source.GitLab {
+		prov = &provider.GitLabProvider{}
+	}
+
+	err := prov.DownloadZip(src.Name, repo.Name, src.Token, repo.Name)
 	if err != nil {
 		return err
 	}

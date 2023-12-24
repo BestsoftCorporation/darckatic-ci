@@ -3,14 +3,15 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-github/v39/github"
-	"github.com/xanzy/go-gitlab"
-	"golang.org/x/oauth2"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/google/go-github/v39/github"
+	"github.com/xanzy/go-gitlab"
+	"golang.org/x/oauth2"
 )
 
 type ProjectProvider interface {

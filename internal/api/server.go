@@ -1,30 +1,28 @@
 package api
 
 import (
+	"darkatic-ci/internal/db"
 	"darkatic-ci/internal/server"
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var db *gorm.DB
-
-func init() {
-	var err error
-	// Replace the connection string with your PostgreSQL database connection details.
-	db, err = gorm.Open("sqlite3", "test.db")
-	if err != nil {
-		panic("failed to connect database")
-	}
-
-	// Migrate the schema
-	db.AutoMigrate(&server.RemoteServer{})
+func getServersHandler(c *gin.Context) {
+	var servers []server.RemoteServer
+	db.DB.Find(&servers)
+	c.JSON(http.StatusOK, servers)
 }
 
-func ServerServe() {
-	r := gin.Default()
-	r.POST("/add-server", addServerHandler)
-	r.Run(":8080")
+func getServerByHostnameHandler(c *gin.Context) {
+	hostname := c.Param("hostname")
+	var server server.RemoteServer
+	if err := db.DB.Where("host = ?", hostname).First(&server).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
+		return
+	}
+	c.JSON(http.StatusOK, server)
 }
 
 func addServerHandler(c *gin.Context) {
@@ -34,6 +32,6 @@ func addServerHandler(c *gin.Context) {
 		return
 	}
 
-	db.Create(&remoteServer)
+	db.DB.Create(&remoteServer)
 	c.JSON(http.StatusOK, gin.H{"message": "Server added successfully"})
 }

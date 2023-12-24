@@ -2,10 +2,9 @@ package darkatic_ci
 
 import (
 	"darkatic-ci/internal/deploy"
-	"darkatic-ci/internal/owner"
-	"darkatic-ci/internal/provider"
 	"darkatic-ci/internal/repository"
 	"darkatic-ci/internal/server"
+	"darkatic-ci/internal/source"
 	"fmt"
 )
 
@@ -19,8 +18,8 @@ func main() {
 		AuthMethod: server.Password,
 	}
 
-	prov := &provider.GitHubProvider{}
-	own := &owner.Owner{
+	//prov := &provider.GitHubProvider{}
+	src := &source.Source{
 		Token: "",
 		Name:  "BestsoftCorporation",
 	}
@@ -28,10 +27,10 @@ func main() {
 	repo := &repository.Repository{
 		Name:       "Darkatic-Website",
 		RemotePath: "/root",
-		Provider:   prov,
+		Source:     *src,
 	}
 
-	err := deploy.Deploy(ser, own, repo)
+	err := deploy.Deploy(ser, repo)
 	if err != nil {
 		fmt.Println(err)
 		return

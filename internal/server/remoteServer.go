@@ -1,5 +1,7 @@
 package server
 
+import "github.com/jinzhu/gorm"
+
 type AuthMethod int
 
 const (
@@ -12,6 +14,7 @@ const (
 
 // RemoteServer represents the details of the remote server.
 type RemoteServer struct {
+	gorm.Model
 	Host       string
 	Port       string
 	Username   string
