@@ -13,8 +13,13 @@ func deployHandler(c *gin.Context) {
 	repo, err := repository.GetRepositoryById(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
 	}
 
-	deploy.Deploy(repo)
+	err = deploy.Deploy(repo)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Repository deployed successfully"})
 }
