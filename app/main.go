@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-
 	api.StartServer()
 	cmd.Execute()
 }

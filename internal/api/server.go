@@ -10,16 +10,15 @@ import (
 )
 
 func getServersHandler(c *gin.Context) {
-	var servers []server.RemoteServer
-	db.DB.Find(&servers)
+	servers := server.GetServers()
 	c.JSON(http.StatusOK, servers)
 }
 
 func getServerByHostnameHandler(c *gin.Context) {
 	hostname := c.Param("hostname")
-	var server server.RemoteServer
-	if err := db.DB.Where("host = ?", hostname).First(&server).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
+	server, err := server.GetServerByHostname(hostname)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, server)

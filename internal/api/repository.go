@@ -22,14 +22,14 @@ func addRepositoryHandler(c *gin.Context) {
 
 func getRepositoriesHandler(c *gin.Context) {
 	var repositories []repository.Repository
-	db.DB.Preload("Source").Find(&repositories)
+	db.DB.Preload("Source").Preload("Server").Find(&repositories)
 	c.JSON(http.StatusOK, repositories)
 }
 
 func getRepositoryByIDHandler(c *gin.Context) {
 	id := c.Param("id")
-	var repository repository.Repository
-	if err := db.DB.Preload("Source").First(&repository, id).Error; err != nil {
+	repository, err := repository.GetRepositoryById(id)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Repository not found"})
 		return
 	}

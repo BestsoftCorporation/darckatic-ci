@@ -28,9 +28,10 @@ func main() {
 		Name:       "Darkatic-Website",
 		RemotePath: "/root",
 		Source:     *src,
+		Server:     *ser,
 	}
 
-	err := deploy.Deploy(ser, repo)
+	err := deploy.Deploy(repo)
 	if err != nil {
 		fmt.Println(err)
 		return

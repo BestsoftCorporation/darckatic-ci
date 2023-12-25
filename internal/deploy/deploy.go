@@ -3,11 +3,10 @@ package deploy
 import (
 	"darkatic-ci/internal/provider"
 	"darkatic-ci/internal/repository"
-	"darkatic-ci/internal/server"
 	"darkatic-ci/internal/source"
 )
 
-func Deploy(server *server.RemoteServer, repo *repository.Repository) error {
+func Deploy(repo *repository.Repository) error {
 
 	var prov provider.ProjectProvider
 
@@ -24,12 +23,12 @@ func Deploy(server *server.RemoteServer, repo *repository.Repository) error {
 		return err
 	}
 
-	err = server.CopyFileToRemote(repo.Name+".zip", repo.RemotePath+"/"+repo.Name+".zip")
+	err = repo.Server.CopyFileToRemote(repo.Name+".zip", repo.RemotePath+"/"+repo.Name+".zip")
 	if err != nil {
 		return err
 	}
 
-	err = server.UnzipFileOnRemote(repo.RemotePath+"/"+repo.Name+".zip", repo.RemotePath+"/"+repo.Name)
+	err = repo.Server.UnzipFileOnRemote(repo.RemotePath+"/"+repo.Name+".zip", repo.RemotePath+"/"+repo.Name)
 	if err != nil {
 		return err
 	}

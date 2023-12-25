@@ -17,6 +17,10 @@ const (
 	GitLab
 )
 
+func init() {
+	db.DB.AutoMigrate(&source.Source{})
+}
+
 func addSourceHandler(c *gin.Context) {
 	var src source.Source
 	if err := c.ShouldBindJSON(&src); err != nil {
