@@ -15,6 +15,7 @@ const (
 // RemoteServer represents the details of the remote server.
 type RemoteServer struct {
 	gorm.Model
+	Name       string
 	Host       string
 	Port       string
 	Username   string
