@@ -19,7 +19,7 @@ func ServeGUI() {
 	// Set the PORT from the environment variables or use the default (8080)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8082"
+		port = "8081"
 	}
 
 	// Start the server

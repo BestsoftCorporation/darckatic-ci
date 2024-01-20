@@ -16,4 +16,11 @@ type Repository struct {
 	RemotePath string
 	Server     server.RemoteServer `gorm:"foreignkey:ServerID"`
 	Source     source.Source       `gorm:"foreignkey:SourceID"`
+	EnvVars    []EnvVars           `gorm:"foreignkey:EnvVarID"`
+}
+
+type EnvVars struct {
+	gorm.Model
+	Name  string
+	Value string
 }

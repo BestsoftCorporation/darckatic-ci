@@ -28,7 +28,21 @@ func StartServer() {
 	r.PUT("/repository/:id", updateRepositoryHandler)
 	r.DELETE("/repository/:id", deleteRepositoryHandler)
 
-	//
+	// Endpoints
+	r.POST("/projects", createProject)
+	r.GET("/projects/:id", getProject)
+	r.GET("/projects", getAllProjects)
+	r.PUT("/projects/:id", updateProject)
+	r.DELETE("/projects/:id", deleteProject)
+
+	// Endpoints
+	r.POST("/environment", createEnvironment)
+	r.GET("/environments/:id", getEnvironment)
+	r.GET("/environments", getAllEnvironments)
+	r.PUT("/environments/:id", updateEnvironment)
+	r.DELETE("/environments/:id", deleteEnvironment)
+
+	// Deploy
 	r.POST("/deploy", deployHandler)
 
 	r.Run(":8080")
