@@ -3,26 +3,52 @@ package api
 import (
 	"darkatic-ci/internal/db"
 	"darkatic-ci/internal/repository"
+	"darkatic-ci/internal/server"
+	"darkatic-ci/internal/source"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+func init() {
+	db.DB.AutoMigrate(&repository.Repository{})
+	db.DB.AutoMigrate(&repository.EnvVars{})
+}
+
 func addRepositoryHandler(c *gin.Context) {
-	var repository repository.Repository
-	if err := c.ShouldBindJSON(&repository); err != nil {
+	var repo repository.Repository
+	if err := c.ShouldBindJSON(&repo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	db.DB.Create(&repository)
+	// Fetch the existing server based on the provided ID
+	var existingServer server.RemoteServer
+	if err := db.DB.First(&existingServer, repo.Server).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
+		return
+	}
+
+	// Fetch the existing source based on the provided ID
+	var existingSource source.Source
+	if err := db.DB.First(&existingSource, repo.Source).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Source not found"})
+		return
+	}
+
+	// Replace the Server and Source fields with the fetched server and source
+	repo.Server = existingServer
+	repo.Source = existingSource
+
+	// Create the repository
+	db.DB.Create(&repo)
 	c.JSON(http.StatusOK, gin.H{"message": "Repository added successfully"})
 }
 
 func getRepositoriesHandler(c *gin.Context) {
 	var repositories []repository.Repository
-	db.DB.Preload("Source").Preload("Server").Find(&repositories)
+	db.DB.Preload("EnvVars").Preload("Source").Preload("Server").Find(&repositories)
 	c.JSON(http.StatusOK, repositories)
 }
 

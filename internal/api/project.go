@@ -3,6 +3,8 @@ package api
 import (
 	"darkatic-ci/internal/db"
 	"darkatic-ci/internal/project"
+	"darkatic-ci/internal/repository"
+	"darkatic-ci/internal/server"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -19,6 +21,32 @@ func createProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Fetch the existing server based on the provided ID
+	var existingServer server.RemoteServer
+	if err := db.DB.First(&existingServer, project.Server.ID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
+		return
+	}
+
+	// Replace the Server field with the fetched server
+	project.Server = existingServer
+
+	// Extract repository IDs from the provided repositories
+	var repositoryIDs []uint
+	for _, repo := range project.Repository {
+		repositoryIDs = append(repositoryIDs, repo.ID)
+	}
+
+	// Fetch existing repositories based on the provided IDs
+	var existingRepositories []repository.Repository
+	if err := db.DB.Where("id IN (?)", repositoryIDs).Find(&existingRepositories).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "One or more repositories not found"})
+		return
+	}
+
+	// Replace the Repository field with the fetched repositories
+	project.Repository = existingRepositories
 
 	db.DB.Create(&project)
 	c.JSON(http.StatusCreated, project)

@@ -9,6 +9,6 @@ import (
 type Project struct {
 	gorm.Model
 	Name       string
-	Server     server.RemoteServer
-	Repository []repository.Repository
+	Server     server.RemoteServer     `gorm:"ForeignKey:ID"`
+	Repository []repository.Repository `gorm:"many2many:project_repository;ForeignKey:ID"`
 }

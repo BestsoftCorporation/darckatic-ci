@@ -9,14 +9,12 @@ import (
 
 type Repository struct {
 	gorm.Model
-	SourceID   uint
-	ServerID   uint
 	Name       string
 	Branch     string
 	RemotePath string
-	Server     server.RemoteServer `gorm:"foreignkey:ServerID"`
-	Source     source.Source       `gorm:"foreignkey:SourceID"`
-	EnvVars    []EnvVars           `gorm:"foreignkey:EnvVarID"`
+	Server     server.RemoteServer `gorm:"foreignkey:ID"`
+	Source     source.Source       `gorm:"foreignkey:ID"`
+	EnvVars    []EnvVars           `gorm:"many2many:repository_env_vars;foreignkey:ID"`
 }
 
 type EnvVars struct {
