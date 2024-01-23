@@ -1,30 +1,14 @@
 package gui
 
 import (
-	"net/http"
-	"os"
-	"path/filepath"
+	"github.com/gin-gonic/gin"
 )
 
 func ServeGUI() {
-	// Serve static files
-	fs := http.FileServer(http.Dir("gui/static"))
-	http.Handle("/gui/static/", http.StripPrefix("/gui/static/", fs))
-
-	// Serve the SPA for any route
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join("gui/static", "index.html"))
+	router := gin.Default()
+	router.Static("/", "./gui/static")
+	router.NoRoute(func(c *gin.Context) {
+		c.File("./gui/static/index.html")
 	})
-
-	// Set the PORT from the environment variables or use the default (8080)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8081"
-	}
-
-	// Start the server
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		panic(err)
-	}
+	router.Run(":8082")
 }

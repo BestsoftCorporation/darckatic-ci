@@ -68,7 +68,7 @@ func getProject(c *gin.Context) {
 // getAllProjects retrieves all projects
 func getAllProjects(c *gin.Context) {
 	var projects []project.Project
-	db.DB.Find(&projects)
+	db.DB.Preload("Repository").Preload("Server").Find(&projects)
 	c.JSON(http.StatusOK, projects)
 }
 
