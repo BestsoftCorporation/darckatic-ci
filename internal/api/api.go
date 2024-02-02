@@ -28,6 +28,9 @@ func StartServer() {
 	r.PUT("/repository/:id", updateRepositoryHandler)
 	r.DELETE("/repository/:id", deleteRepositoryHandler)
 
+	// FetchRepositoriesFromSource
+	r.GET("/:source_id/repositories", getSourceRepositories)
+
 	// Endpoints
 	r.POST("/projects", createProject)
 	r.GET("/projects/:id", getProject)
