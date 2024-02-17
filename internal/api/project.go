@@ -57,7 +57,12 @@ func getProject(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	var project project.Project
 
-	if err := db.DB.First(&project, id).Error; err != nil {
+	if err := db.DB.Preload("Repository").
+		Preload("Server").
+		Preload("Repository.Source").
+		Preload("Repository.Server").
+		Find(&project,
+			id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return
 	}
@@ -68,7 +73,7 @@ func getProject(c *gin.Context) {
 // getAllProjects retrieves all projects
 func getAllProjects(c *gin.Context) {
 	var projects []project.Project
-	db.DB.Preload("Repository").Preload("Server").Find(&projects)
+	db.DB.Find(&projects)
 	c.JSON(http.StatusOK, projects)
 }
 
