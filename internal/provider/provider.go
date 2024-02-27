@@ -126,7 +126,7 @@ func (g *GitLabProvider) FetchProjects(owner, token string) ([]string, error) {
 		return nil, err
 	}
 
-	projects, _, err := client.Groups.ListGroupProjects(owner, nil)
+	projects, _, err := client.Projects.ListUserProjects(owner, nil)
 	if err != nil {
 		return nil, err
 	}

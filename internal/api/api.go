@@ -30,6 +30,7 @@ func StartServer() {
 
 	// FetchRepositoriesFromSource
 	r.GET("/:source_id/repositories", getSourceRepositories)
+	r.GET("/repository/:id/branches", getRepositoryBranches)
 
 	// Endpoints
 	r.POST("/projects", createProject)
