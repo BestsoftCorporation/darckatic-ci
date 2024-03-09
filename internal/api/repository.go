@@ -18,21 +18,30 @@ func init() {
 
 func addRepositoryHandler(c *gin.Context) {
 	var repo repository.Repository
-	if err := c.ShouldBindJSON(&repo); err != nil {
+
+	var requestBody struct {
+		Name       string `json:"Name"`
+		Branch     string `json:"Branch"`
+		RemotePath string `json:"RemotePath"`
+		ServerID   int    `json:"ServerID"`
+		SourceID   int    `json:"SourceID"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Fetch the existing server based on the provided ID
 	var existingServer server.RemoteServer
-	if err := db.DB.First(&existingServer, repo.Server).Error; err != nil {
+	if err := db.DB.First(&existingServer, requestBody.ServerID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
 		return
 	}
 
 	// Fetch the existing source based on the provided ID
 	var existingSource source.Source
-	if err := db.DB.First(&existingSource, repo.Source).Error; err != nil {
+	if err := db.DB.First(&existingSource, requestBody.SourceID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Source not found"})
 		return
 	}
@@ -40,6 +49,8 @@ func addRepositoryHandler(c *gin.Context) {
 	// Replace the Server and Source fields with the fetched server and source
 	repo.Server = existingServer
 	repo.Source = existingSource
+	repo.Name = requestBody.Name
+	repo.RemotePath = requestBody.RemotePath
 
 	// Create the repository
 	db.DB.Create(&repo)
